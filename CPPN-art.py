@@ -6,7 +6,8 @@ from scipy import misc
 coords = tf.placeholder(tf.float32, (None, 4))
 
 k, l, m, n = 200, 50, 30, 15
-B = 150
+B = 320
+b_w = 3
 
 w1 = tf.Variable(tf.random_normal([4, k], stddev=(B*(1/4))**2))
 b1 = tf.Variable(tf.zeros([k]))
@@ -16,8 +17,8 @@ w3 = tf.Variable(tf.random_normal([l, m], stddev=(B*(1/l))**2))
 b3 = tf.Variable(tf.zeros([m]))
 w4 = tf.Variable(tf.random_normal([m, n], stddev=(B*(1/m))**2))
 b4 = tf.Variable(tf.zeros([n]))
-w5 = tf.Variable(tf.random_normal([n, 3], stddev=(B*(1/n))**2))
-b5 = tf.Variable(tf.zeros([3]))
+w5 = tf.Variable(tf.random_normal([n, b_w], stddev=(B*(1/n))**2))
+b5 = tf.Variable(tf.zeros([b_w]))
 
 y1 = tf.nn.tanh(tf.matmul(coords, w1) + b1)
 y2 = tf.nn.tanh(tf.matmul(y1, w2) + b2)
@@ -28,7 +29,7 @@ pred = tf.nn.tanh(tf.matmul(y4, w5) + b5)
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     rand = 50
-    img_size = 1000
+    img_size = 500
     features = [[[] for _ in range(img_size)] for _ in range(img_size)]
 
     for x_axis in range(img_size):
@@ -38,7 +39,7 @@ with tf.Session() as sess:
 
     reshaped = np.reshape(features, (-1, 4))
     rgb = sess.run(pred, feed_dict={coords: reshaped})
-    reshaped_rgb = np.reshape(rgb, (img_size, img_size,3))
+    reshaped_rgb = np.reshape(rgb, (img_size, img_size, 3))
 
     filename = input("Enter filename to save: ")
     misc.imsave("images/" + filename, reshaped_rgb)
