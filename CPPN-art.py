@@ -1,8 +1,9 @@
 import tensorflow as tf
 import numpy as np
 from scipy import misc
-coords = tf.placeholder(tf.float32, (500, 500, 1, 1))
 
+
+coords = tf.placeholder(tf.float32, (500, 500, 1, 1))
 
 k, l, m, n = 200, 100, 60, 30
 w1 = tf.Variable(tf.truncated_normal([1, k], stddev=0.1))
