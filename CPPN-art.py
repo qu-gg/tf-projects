@@ -26,18 +26,25 @@ pred = tf.nn.softmax(tf.matmul(y4, w5) + b5)
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     x, y = [0 for _ in range(500)], [0 for _  in range(500)]
+    radius = 1
+    rand = 50
     for n in range(500):
         x[n] = n
         y[n] = n
 
-    values = [[[]]]
+    # values = [[[]]]
+    features = [[[] for _ in range(500)] for _ in range(500)]
 
     for x_axis in range(500):
         for y_axis in range(500):
-            features = [x[x_axis], y[y_axis], 1, 50]
-            rgb = sess.run(pred, feed_dict={coords: features})
-            values[x_axis][y_axis] = rgb
+            features[x_axis][y_axis] = [x_axis, y_axis, radius, rand]
 
-    values = np.array(values)
+    reshaped = np.reshape(features, (-1, 4))
+    rgb = sess.run(pred, feed_dict={coords: reshaped})
+    print(rgb)
+    reshaped_rgb = np.reshape(rgb, (500, 500,3))
+    # values[x_axis][y_axis] = rgb
+
+    # values = np.array(values)
     filename = input("Enter filename to save: ")
-    misc.imsave("images/" + filename, values)
+    misc.imsave("images/" + filename, reshaped_rgb)
