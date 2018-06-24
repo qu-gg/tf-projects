@@ -10,3 +10,8 @@
     misc.imsave("images/" + filename, values)
 
 
+Old way of saving images with name
+# filename = input("Enter filename to save: ")
+# misc.imsave("images/" + filename, np.array(rgb))
+
+(B*(1/4))**2)
