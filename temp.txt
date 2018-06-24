@@ -1,0 +1,12 @@
+    values_test = [[[] for _ in range(img_size)] for _ in range(img_size)]
+
+    for x_axis in range(img_size):
+        for y_axis in range(img_size):
+            radius = np.sqrt(x_axis**2 + y_axis**2)
+            features[x_axis][y_axis] = [[x_axis, y_axis, radius, rand]]
+            values_test[x_axis][y_axis] = sess.run(pred, feed_dict={coords:features[x_axis][y_axis]})
+
+    values = np.reshape(values_test, (img_size, img_size, 3))
+    misc.imsave("images/" + filename, values)
+
+
