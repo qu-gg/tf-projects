@@ -30,6 +30,19 @@ def create_array():
     return value_to_return
 
 
+def get_values(array, batch_num):
+    x_vals = [0 for _ in range(img_size)]
+    y_vals = [0 for _ in range(img_size)]
+    radii = [0 for _ in range(img_size)]
+    i = 0
+    for value in array:
+        x_vals[i] = value[0]
+        y_vals[i] = value[1]
+        radii[i] = value[2]
+        i += 1
+
+    return x_vals, y_vals, radii
+
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 with tf.Session(config=config) as sess:
@@ -43,7 +56,8 @@ with tf.Session(config=config) as sess:
     rgb = [0 for _ in range(img_size)]
     for batch in range(img_size):
         feed = parameters[batch]
-        print(feed)
+        x, y, radii = get_values(feed, batch)
+        feed = [x, y, radii, [rand]]
         summary, result = sess.run([merge, pred], feed_dict={coords: feed})
         writer.add_summary(summary)
         rgb[batch] = result
