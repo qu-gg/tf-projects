@@ -15,3 +15,11 @@ Old way of saving images with name
 # misc.imsave("images/" + filename, np.array(rgb))
 
 (B*(1/4))**2)
+
+
+rgb = [0 for _ in range(img_size)]
+    for batch in range(img_size):
+        feed = parameters[batch]
+        summary, result = sess.run([merge, pred], feed_dict={coords: feed})
+        writer.add_summary(summary)
+        rgb[batch] = result
