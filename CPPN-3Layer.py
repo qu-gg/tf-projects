@@ -5,15 +5,16 @@ tf.logging.set_verbosity(tf.logging.ERROR)
 import numpy as np
 from scipy import misc
 
-img_size = 1000
+img_size = 500
 coords = tf.placeholder(tf.float32, (None, 4), name='features')
 tf.summary.histogram("features", coords)
 
-k, l, m = 2500, 1000, 600
+k, l, m = 1000, 500, 250
 B = np.cos(100)
 
+img_reshape = tf.reshape(coords, shape=[1, 1, -1, 1])
 w1 = tf.Variable(tf.truncated_normal([4, k], stddev=np.random.uniform(50, 150), mean=0), name="Weights1")
-w2 = tf.Variable(tf.truncated_normal([k, l], stddev=B/k, mean=0), name="Weights2")
+w2 = tf.Variable(tf.truncated_normal([k, l], stddev=B*2/k, mean=0), name="Weights2")
 w3 = tf.Variable(tf.truncated_normal([l, 3], stddev=B/l, mean=0), name="Weights3")
 
 y1 = tf.nn.tanh(tf.matmul(coords, w1), name="HLayer1")
@@ -26,8 +27,8 @@ tf.summary.histogram("predictions", pred)
 
 
 def create_array():
-    parameters = [[[] for _ in range(img_size)] for _ in range(img_size)]
-    for x in range(img_size):
+    parameters = [[[] for _ in range(img_size)] for _ in range(img_size * 2)]
+    for x in range(img_size * 2):
         for y in range(img_size):
             radius = np.sqrt(x ** 2 + y ** 2)
             parameters[x][y] = [x, y, radius, rand]
@@ -43,8 +44,8 @@ with tf.Session(config=config) as sess:
 
     features = create_array()
 
-    rgb = [0 for _ in range(img_size)]
-    for batch in range(img_size):
+    rgb = [0 for _ in range(img_size * 2)]
+    for batch in range(img_size * 2):
         feed = features[batch]
         summary, result = sess.run([merge, pred], feed_dict={coords: feed})
         writer.add_summary(summary)
