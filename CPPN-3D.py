@@ -2,20 +2,24 @@ import tensorflow as tf
 import numpy as np
 from scipy import misc
 
-img_size = 500
+img_size = 256
 coords = tf.placeholder(tf.float32, (1, 4), name='features')
 tf.summary.histogram("features", coords)
 
-k, l, m = 100, 50, 25
+k, l, m, n, p = 5000, 2500, 1000, 2500, 1500
 B = np.cos(100)
 
 w1 = tf.Variable(tf.truncated_normal((4, k), stddev=np.random.uniform(50, 150), mean=0), name="Weights1")
 w2 = tf.Variable(tf.truncated_normal([k, l], stddev=B/k, mean=0), name="Weights2")
-w3 = tf.Variable(tf.truncated_normal([l, 3], stddev=B/l, mean=0), name="Weights3")
+w3 = tf.Variable(tf.truncated_normal([l, m], stddev=B*3/l, mean=0), name="Weights3")
+w4 = tf.Variable(tf.truncated_normal([m, n], stddev=B*2/m, mean=0), name="Weights3")
+w5 = tf.Variable(tf.truncated_normal([n, 3], stddev=B/n, mean=0), name="Weights3")
 
 y1 = tf.nn.tanh(tf.matmul(coords, w1), name="HLayer1")
 y2 = tf.nn.tanh(tf.matmul(y1, w2), name="HLayer2")
-pred = tf.nn.tanh(tf.matmul(y2, w3), name="OutputLayer")
+y3 = tf.nn.tanh(tf.matmul(y2, w3), name="OutputLayer")
+y4 = tf.nn.tanh(tf.matmul(y3, w4), name="OutputLayer")
+pred = tf.nn.tanh(tf.matmul(y4, w5), name="OutputLayer")
 
 '''Summary'''
 tf.summary.histogram("predictions", pred)
