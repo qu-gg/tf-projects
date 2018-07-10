@@ -1,60 +1,52 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
+tf.logging.set_verbosity(tf.logging.ERROR)
 import numpy as np
 from scipy import misc
 
-img_size = 256
-coords = tf.placeholder(tf.float32, (1, 4), name='features')
-tf.summary.histogram("features", coords)
+img_size = 1000
+coords = tf.placeholder(tf.float32, (None, 4), name='features')
 
-k, l, m, n, p = 5000, 2500, 1000, 2500, 1500
-B = np.cos(100)
+k, l, m = 5000, 2500, 1000
+B = 250
 
-w1 = tf.Variable(tf.truncated_normal((4, k), stddev=np.random.uniform(50, 150), mean=0), name="Weights1")
-w2 = tf.Variable(tf.truncated_normal([k, l], stddev=B/k, mean=0), name="Weights2")
-w3 = tf.Variable(tf.truncated_normal([l, m], stddev=B*3/l, mean=0), name="Weights3")
-w4 = tf.Variable(tf.truncated_normal([m, n], stddev=B*2/m, mean=0), name="Weights3")
-w5 = tf.Variable(tf.truncated_normal([n, 3], stddev=B/n, mean=0), name="Weights3")
+w1 = tf.Variable(tf.random_normal([4, k], stddev=.613, mean=0), name="Weights1")
+w2 = tf.Variable(tf.random_normal([k, l], stddev=.0499, mean=0), name="Weights2")
+w3 = tf.Variable(tf.truncated_normal([l, 3], stddev=.00184, mean=0), name="Weights3")
 
 y1 = tf.nn.tanh(tf.matmul(coords, w1), name="HLayer1")
 y2 = tf.nn.tanh(tf.matmul(y1, w2), name="HLayer2")
-y3 = tf.nn.tanh(tf.matmul(y2, w3), name="OutputLayer")
-y4 = tf.nn.tanh(tf.matmul(y3, w4), name="OutputLayer")
-pred = tf.nn.tanh(tf.matmul(y4, w5), name="OutputLayer")
-
-'''Summary'''
-tf.summary.histogram("predictions", pred)
+pred = tf.nn.tanh(tf.matmul(y2, w3), name="OutputLayer")
 
 
 def create_array():
-    value_to_return = [[[] for _ in range(img_size)] for _ in range(img_size)]
+    parameters = [[[] for _ in range(img_size)] for _ in range(img_size)]
     for x in range(img_size):
         for y in range(img_size):
-            radius = np.sqrt(x ** 2 + y ** 2)
-            value_to_return[x][y] = [x, y, radius, rand]
-    return value_to_return
-
+            radius = np.sqrt((x + 1)** 2 + (y +1)** 2)
+            parameters[x][y] = [x + 1, y + 1, radius, rand]
+    return parameters
 
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 with tf.Session(config=config) as sess:
     sess.run(tf.global_variables_initializer())
-    writer = tf.summary.FileWriter("graphs/", sess.graph)
-    merge = tf.summary.merge_all()
-    rand = 250
+    rand = 450
 
-    parameters = create_array()
+    features = create_array()
 
-    new_rgb = [[[] for _ in range(img_size)] for _ in range(img_size)]
-    for x in range(img_size):
-        print(x)
-        for y in range(img_size):
-            radius = np.sqrt(x**2 + y**2)
-            feed = [[x, y, radius, rand]]
+    rgb = [0 for _ in range(img_size)]
+    for batch in range(img_size):
+        if batch < img_size - 1:
+            feed = features[batch] + features[batch + 1]
             result = sess.run(pred, feed_dict={coords: feed})
-            new_rgb[x][y] = result
-    final = np.reshape(new_rgb, [img_size, img_size, 3])
+            rgb[batch] = result
+            rgb[batch + 1] = result
+        else:
+            feed = features[batch]
+            result = sess.run(pred, feed_dict={coords: feed})
+            rgb[batch] = result
 
-    misc.toimage(final).show()
-    writer.close()
-
+    misc.imsave("images/" + "testing.png", rgb)
 
