@@ -17,7 +17,7 @@ def iterative_weights(num_neurons, initial, layers):
     weight_list.append(initial_weight)
 
     counter = 1
-    while counter < layers:
+    while counter < layers - 1:
         new_weight = tf.Variable(tf.truncated_normal([num_neurons, num_neurons], stddev=.2500))
         weight_list.append(new_weight)
         counter += 1
