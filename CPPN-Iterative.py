@@ -4,7 +4,6 @@ import tensorflow as tf
 tf.logging.set_verbosity(tf.logging.ERROR)
 import numpy as np
 from scipy import misc
-import random
 
 x_size = 250
 y_size = 250
@@ -14,16 +13,17 @@ coords = tf.placeholder(tf.float32, (None, 4), name='features')
 
 def iterative_weights(num_neurons, initial, layers):
     weight_list = []
-    for step in range(layers):
-        if step == 0:
-            new_weight = tf.Variable(tf.truncated_normal([initial, num_neurons], stddev=.5500))
-            weight_list.append(new_weight)
-        if step != 0 and step < layers:
-            new_weight = tf.Variable(tf.truncated_normal([num_neurons, num_neurons], stddev=.2500))
-            weight_list.append(new_weight)
-        if step == layers:
-            new_weight = tf.Variable(tf.truncated_normal([num_neurons, 3], stddev=.0145))
-            weight_list.append(new_weight)
+    initial_weight = tf.Variable(tf.truncated_normal([initial, num_neurons], stddev=.5500))
+    weight_list.append(initial_weight)
+
+    counter = 1
+    while counter < layers:
+        new_weight = tf.Variable(tf.truncated_normal([num_neurons, num_neurons], stddev=.2500))
+        weight_list.append(new_weight)
+        counter += 1
+
+    final_weight = tf.Variable(tf.truncated_normal([num_neurons, 3], stddev=.0145))
+    weight_list.append(final_weight)
     return weight_list
 
 
@@ -44,8 +44,8 @@ def create_array():
     parameters = [[[] for _ in range(x_size)] for _ in range(y_size)]
     for y in range(y_size):
         for x in range(x_size):
-            added_x = x + random.randint(25,50)
-            added_y = y + random.randint(25,50)
+            added_x = x + 50
+            added_y = y + 50
             radius = np.sqrt(added_x ** 2 + added_y ** 2)
             parameters[y][x] = [added_y, added_x, radius, rand]
     return parameters
