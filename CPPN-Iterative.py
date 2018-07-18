@@ -4,6 +4,7 @@ import tensorflow as tf
 tf.logging.set_verbosity(tf.logging.ERROR)
 import numpy as np
 from scipy import misc
+from PIL import Image as im
 
 x_size = 1920
 y_size = 1080
@@ -36,8 +37,8 @@ def iterative_layers(weight_list, prev_output, layers):
     return calculation
 
 
-num_layers = 5
-weights = iterative_weights(1500, 4, num_layers)
+num_layers = 6
+weights = iterative_weights(2000, 4, num_layers)
 pred = iterative_layers(weights, coords, num_layers)
 
 
@@ -56,7 +57,7 @@ config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 with tf.Session(config=config) as sess:
     sess.run(tf.global_variables_initializer())
-    rand = 1500
+    rand = 1750
 
     features = create_array()
 
@@ -66,4 +67,4 @@ with tf.Session(config=config) as sess:
         result = sess.run(pred, feed_dict={coords: feed})
         rgb[batch] = result
 
-    misc.imsave("images/" + "testing.png", rgb)
+    misc.imsave("images/" + "testing.png", np.asarray(rgb))
