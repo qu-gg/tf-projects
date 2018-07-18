@@ -4,7 +4,6 @@ import tensorflow as tf
 tf.logging.set_verbosity(tf.logging.ERROR)
 import numpy as np
 from scipy import misc
-from PIL import Image as im
 
 x_size = 1920
 y_size = 1080
