@@ -16,11 +16,9 @@ def iterative_weights(num_neurons, initial, layers):
     initial_weight = tf.Variable(tf.truncated_normal([initial, num_neurons], stddev=.5500))
     weight_list.append(initial_weight)
 
-    counter = 1
-    while counter < layers - 1:
+    for _ in range(layers - 2):
         new_weight = tf.Variable(tf.truncated_normal([num_neurons, num_neurons], stddev=.2500))
         weight_list.append(new_weight)
-        counter += 1
 
     final_weight = tf.Variable(tf.truncated_normal([num_neurons, 3], stddev=.0145))
     weight_list.append(final_weight)
@@ -28,12 +26,10 @@ def iterative_weights(num_neurons, initial, layers):
 
 
 def iterative_layers(weight_list, prev_output, layers):
-    calculation = 0
-    test = prev_output
+    output = prev_output
     for step in range(layers):
-        calculation = tf.nn.tanh(tf.matmul(test, weight_list[step]))
-        test = calculation
-    return calculation
+        output = tf.nn.tanh(tf.matmul(output, weight_list[step]))
+    return tf.nn.relu6(output)
 
 
 num_layers = 6
