@@ -23,7 +23,7 @@ second_layer = tf.layers.conv2d(inputs=first_layer, name='layer_conv2', padding=
 flatten_second = tf.layers.flatten(second_layer)
 
 # Fully connected layer
-pred = tf.layers.dense(inputs=flatten_second, name='fc_layer', units=1, activation=tf.nn.relu)
+pred = tf.layers.dense(inputs=flatten_second, name='fc_layer', units=1, activation=tf.nn.softmax)
 
 # Loss, cost, optimizing
 loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=input_cls, logits=pred)
@@ -33,13 +33,6 @@ optimizer = tf.train.AdamOptimizer(learning_rate=0.0001).minimize(cost)
 # Accuracy
 correct_prediction = tf.equal(input_cls, pred)
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-
-
-def create_array(batch_size):
-    true_cls = []
-    for _ in range(batch_size):
-        true_cls.append([1])
-    return true_cls
 
 
 # train function
@@ -55,14 +48,13 @@ def train_discrim(num_iter):
 
         for i in range(num_iter):
             x_batch, y_true_batch = data.train.next_batch(train_batch_size)
-            true_cls = create_array(train_batch_size)
 
             feed_dict_train = {input_x: x_batch,
-                               input_cls: true_cls}
+                               input_cls: 0}
 
             sess.run(optimizer, feed_dict=feed_dict_train)
 
     sess.close()
 
 
-train_discrim(10000)
+train_discrim(1000)
