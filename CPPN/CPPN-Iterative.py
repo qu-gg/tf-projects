@@ -65,3 +65,5 @@ with tf.Session(config=config) as sess:
         rgb[batch] = result
 
     misc.imsave("images/" + "testing.png", np.asarray(rgb))
+
+sess.close()
