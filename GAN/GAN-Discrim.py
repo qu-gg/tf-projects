@@ -4,7 +4,10 @@ import tensorflow as tf
 tf.logging.set_verbosity(tf.logging.ERROR)
 import numpy as np
 from scipy import misc
-
 from tensorflow.examples.tutorials.mnist import input_data
 
-x = input_data.read_data_sets()
+data = input_data.read_data_sets()
+
+input_x = tf.placeholder([None, 784])
+input_y = tf.placeholder([None, 10])
+
