@@ -5,8 +5,8 @@ tf.logging.set_verbosity(tf.logging.ERROR)
 import numpy as np
 from scipy import misc
 
-x_size = 1920
-y_size = 1080
+x_size = 28
+y_size = 28
 
 coords = tf.placeholder(tf.float32, (None, 4), name='features')
 
@@ -33,7 +33,7 @@ def iterative_layers(weight_list, prev_output, layers):
 
 
 num_layers = 6
-weights = iterative_weights(3000, 4, num_layers)
+weights = iterative_weights(2500, 4, num_layers)
 pred = iterative_layers(weights, coords, num_layers)
 
 
