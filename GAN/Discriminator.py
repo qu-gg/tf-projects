@@ -8,19 +8,18 @@ x_reshape = tf.reshape(input_x, [-1, 28, 28, 1])
 
 input_cls = tf.placeholder(tf.float32, [None, 1])
 
-# First conv layer, full size with strides 2 to pool size
-first_layer = tf.layers.conv2d(inputs=x_reshape, padding='same', filters=16,
-                               kernel_size=5, strides=2, activation=tf.nn.relu)
+conv1 = tf.layers.conv2d(inputs=x_reshape, padding='same', filters=1, kernel_size=5, strides=2, activation=tf.nn.relu)
 
-# Second conv layer, half size
-second_layer = tf.layers.conv2d(inputs=first_layer, padding='same', filters=32,
-                                kernel_size=5, strides=2, activation=tf.nn.relu)
+conv2 = tf.layers.conv2d(inputs=conv1, padding='same', filters=128, kernel_size=5, strides=2, activation=tf.nn.relu)
 
-# Flattened second layer for connecting to 2d layer
-flatten_second = tf.layers.flatten(second_layer)
+conv3 = tf.layers.conv2d(inputs=conv2, padding='same', filters=256, kernel_size=5, activation=tf.nn.relu)
+
+conv4 = tf.layers.conv2d(inputs=conv3, padding='same', filters=512, kernel_size=5, activation=tf.nn.relu)
+
+flatten = tf.layers.flatten(conv4)
 
 # Fully connected layer
-pred = tf.layers.dense(inputs=flatten_second, units=1, activation=tf.nn.softmax)
+pred = tf.layers.dense(inputs=flatten, units=1, activation=tf.nn.softmax)
 
 # Loss, cost, optimizing
 loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=input_cls, logits=pred)
@@ -53,3 +52,14 @@ def train_discrim(num_iter):
 
     sess.close()
 
+
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
+with tf.Session(config=config) as sess:
+    sess.run(tf.global_variables_initializer())
+
+    image = generate_img()
+    result = sess.run(pred, feed_dict={input_x: image})
+    print(result)
+
+sess.close()

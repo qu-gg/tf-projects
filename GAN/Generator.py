@@ -24,9 +24,7 @@ conv_four = tf.layers.conv2d_transpose(inputs=conv_three, filters=128, kernel_si
 final_layer = tf.layers.conv2d_transpose(inputs=conv_four, filters=1, kernel_size=5, padding='same', strides=2,
                                          activation=tf.nn.relu)
 
-flattened = tf.layers.flatten(final_layer)
-
-output = tf.reshape(flattened, [28, 28])
+output = tf.layers.flatten(final_layer)
 
 
 def generate_img():
@@ -36,8 +34,6 @@ def generate_img():
         sess.run(tf.global_variables_initializer())
 
         fake = sess.run(output, feed_dict={x_input: [np.random.uniform(-1, 1, 49)]})
-        print(fake)
-        misc.toimage(fake).show()
 
     sess.close()
     return fake
