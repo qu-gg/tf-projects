@@ -39,6 +39,3 @@ def generate_img(num_runs):
 
     sess.close()
     return fakes
-
-
-generate_img()
