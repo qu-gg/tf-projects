@@ -28,7 +28,7 @@ conv4 = tf.layers.conv2d(inputs=conv3, padding='same', filters=512, kernel_size=
 flatten = tf.layers.flatten(conv4)
 
 pred = tf.layers.dense(inputs=flatten, units=1, kernel_initializer=tf.truncated_normal_initializer(stddev=.001))
-pred = tf.nn.softmax(logits=pred)
+pred = tf.nn.sigmoid(pred)
 
 
 # Loss, cost, optimizing
@@ -87,7 +87,6 @@ def train_discrim(num_iter):
     for i in range(num_iter):
         x_batch, y_true = data.train.next_batch(train_batch_size)
         image_batch, class_batch = create_batch(x_batch, train_batch_size)
-
         feed_dict_train = {input_x: image_batch,
                            input_cls: class_batch}
 
