@@ -28,17 +28,19 @@ flattened = tf.layers.flatten(final_layer)
 
 output = tf.reshape(flattened, [28, 28])
 
+
 def generate_img():
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
     with tf.Session(config=config) as sess:
         sess.run(tf.global_variables_initializer())
 
-        fake = sess.run(output, feed_dict={x_input: [np.random.uniform(0, 1, 49)]})
+        fake = sess.run(output, feed_dict={x_input: [np.random.uniform(-1, 1, 49)]})
         print(fake)
-        # misc.toimage(fake).show()
+        misc.toimage(fake).show()
 
     sess.close()
+    return fake
 
-for _ in range(100):
-    generate_img()
+
+generate_img()

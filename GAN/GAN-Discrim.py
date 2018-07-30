@@ -1,9 +1,6 @@
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
-tf.logging.set_verbosity(tf.logging.ERROR)
 from tensorflow.examples.tutorials.mnist import input_data
-
+from GAN.Generator import generate_img
 data = input_data.read_data_sets('data/MNIST', one_hot=True)
 
 input_x = tf.placeholder(tf.float32, [None, 784])
@@ -56,5 +53,3 @@ def train_discrim(num_iter):
 
     sess.close()
 
-
-train_discrim(1000)
