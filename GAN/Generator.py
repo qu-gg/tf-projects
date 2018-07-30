@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 from scipy import misc
+from GAN.Discriminator import use_discrim
 
 x_input = tf.placeholder(tf.float32, [None, 49])
 img_input = tf.cast(tf.reshape(x_input, [-1, 7, 7, 1]), tf.float32)
@@ -27,8 +28,24 @@ final_layer = tf.layers.conv2d_transpose(inputs=conv_four, filters=1, kernel_siz
 output = tf.layers.flatten(final_layer)
 reshaped = tf.reshape(output, [28,28])
 
+loss = tf.placeholder(tf.float32, [None, 128])
+cost = tf.reduce_mean(loss)
+optimizer = tf.train.AdamOptimizer(learning_rate=.00001).minimize(cost)
+
 
 def train_gen():
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    with tf.Session(config=config) as sess:
+        sess.run(tf.global_variables_initializer())
+
+        # add loss calculations here
+        for _ in range(5):
+            entropy = use_discrim()
+            sess.run(optimizer, feed_dict={loss: entropy})
+
+        image = sess.run(output, feed_dict={x_input: []})
+        misc.toimage(image).show()
 
 
 def generate_img(num_runs):

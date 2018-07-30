@@ -30,7 +30,6 @@ flatten = tf.layers.flatten(conv4)
 pred = tf.layers.dense(inputs=flatten, units=1, kernel_initializer=tf.truncated_normal_initializer(stddev=.001))
 pred = tf.nn.sigmoid(pred)
 
-
 # Loss, cost, optimizing
 loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=input_cls, logits=pred)
 cost = tf.reduce_mean(loss)
@@ -99,7 +98,7 @@ def train_discrim(num_iter):
     sess.close()
 
 
-def use_discrim(num_iter):
+def use_discrim(num_iter=1):
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
     sess = tf.Session(config=config)
@@ -107,8 +106,8 @@ def use_discrim(num_iter):
 
     batch_size = 64
     for i in range(num_iter):
-        x_batch, y_true = data.train.next_batch(train_batch_size)
-        image_batch, class_batch = create_batch(x_batch, train_batch_size)
+        x_batch, y_true = data.train.next_batch(batch_size)
+        image_batch, class_batch = create_batch(x_batch, batch_size)
         feed_dict_train = {input_x: image_batch,
                            input_cls: class_batch}
 
@@ -118,5 +117,4 @@ def use_discrim(num_iter):
     return cross_entropy
 
 
-
-train_discrim(10)
+use_discrim(1)
