@@ -1,4 +1,7 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
+tf.logging.set_verbosity(tf.logging.ERROR)
 from tensorflow.examples.tutorials.mnist import input_data
 from GAN.Generator import generate_img
 data = input_data.read_data_sets('data/MNIST', one_hot=True)
@@ -74,8 +77,7 @@ def train_discrim(num_iter):
     train_batch_size = 64
 
     for i in range(num_iter):
-        x_batch = data.train.next_batch(train_batch_size)
-        print(x_batch)
+        x_batch, y_true = data.train.next_batch(train_batch_size)
         image_batch, class_batch = create_batch(x_batch, train_batch_size)
 
         feed_dict_train = {input_x: image_batch,
