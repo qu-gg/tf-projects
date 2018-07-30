@@ -35,7 +35,7 @@ def generate_img(num_runs):
         fakes = []
         for _ in range(num_runs):
             fake = sess.run(output, feed_dict={x_input: [np.random.uniform(0, 1, 49)]})
-            fakes.append(fake)
+            fakes.append(fake[0])
 
     sess.close()
     return fakes

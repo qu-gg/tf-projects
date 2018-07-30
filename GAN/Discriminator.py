@@ -2,6 +2,7 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 tf.logging.set_verbosity(tf.logging.ERROR)
+import numpy as np
 from tensorflow.examples.tutorials.mnist import input_data
 from GAN.Generator import generate_img
 data = input_data.read_data_sets('data/MNIST', one_hot=True)
@@ -26,14 +27,12 @@ conv4 = tf.layers.conv2d(inputs=conv3, padding='same', filters=512, kernel_size=
 
 flatten = tf.layers.flatten(conv4)
 
-pred = tf.layers.dense(inputs=flatten, units=1, activation=tf.nn.relu,
-                       kernel_initializer=tf.truncated_normal_initializer(stddev=.001))
-
+pred = tf.layers.dense(inputs=flatten, units=1, activation=tf.nn.sigmoid, kernel_initializer=tf.truncated_normal_initializer(stddev=.001))
 
 # Loss, cost, optimizing
 loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=input_cls, logits=pred)
 cost = tf.reduce_mean(loss)
-optimizer = tf.train.AdamOptimizer(learning_rate=0.0001).minimize(cost)
+optimizer = tf.train.AdamOptimizer(learning_rate=0.001).minimize(cost)
 
 # Accuracy
 correct_prediction = tf.equal(input_cls, pred)
@@ -59,11 +58,11 @@ def create_batch(mnist, batch_size):
     for i in range(batch_size * 2):
         if i % 2 == 0:
             image_batch.append(mnist[even_index])
-            class_batch.append(1)
+            class_batch.append([1])
             even_index += 1
         else:
-            image_batch.append(generated[odd_index])
-            class_batch.append(0)
+            image_batch.append(np.asarray(generated[odd_index]))
+            class_batch.append([0])
             odd_index += 1
     return image_batch, class_batch
 
@@ -86,8 +85,8 @@ def train_discrim(num_iter):
         sess.run(optimizer, feed_dict=feed_dict_train)
 
         # accuracy
+        print("Result: ", sess.run(pred, feed_dict=feed_dict_train))
         print("Acc on ", i, ": ", sess.run(accuracy, feed_dict=feed_dict_train))
-
 
     sess.close()
 
