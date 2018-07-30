@@ -25,6 +25,10 @@ final_layer = tf.layers.conv2d_transpose(inputs=conv_four, filters=1, kernel_siz
                                          activation=tf.nn.relu)
 
 output = tf.layers.flatten(final_layer)
+reshaped = tf.reshape(output, [28,28])
+
+
+def train_gen():
 
 
 def generate_img(num_runs):
@@ -39,3 +43,19 @@ def generate_img(num_runs):
 
     sess.close()
     return fakes
+
+
+if __name__ == "__main__":
+    def main():
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        with tf.Session(config=config) as sess:
+            sess.run(tf.global_variables_initializer())
+
+            fake = sess.run(reshaped, feed_dict={x_input: [np.random.uniform(0, 1, 49)]})
+            misc.toimage(fake).show()
+
+
+        sess.close()
+
+    main()
