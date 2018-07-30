@@ -27,7 +27,9 @@ conv4 = tf.layers.conv2d(inputs=conv3, padding='same', filters=512, kernel_size=
 
 flatten = tf.layers.flatten(conv4)
 
-pred = tf.layers.dense(inputs=flatten, units=1, activation=tf.nn.sigmoid, kernel_initializer=tf.truncated_normal_initializer(stddev=.001))
+pred = tf.layers.dense(inputs=flatten, units=1, kernel_initializer=tf.truncated_normal_initializer(stddev=.001))
+pred = tf.nn.softmax(logits=pred)
+
 
 # Loss, cost, optimizing
 loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=input_cls, logits=pred)
@@ -61,9 +63,16 @@ def create_batch(mnist, batch_size):
             class_batch.append([1])
             even_index += 1
         else:
-            image_batch.append(np.asarray(generated[odd_index]))
+            image_batch.append(generated[odd_index])
             class_batch.append([0])
             odd_index += 1
+
+    # Shuffle
+    numpy_state = np.random.get_state()
+    np.random.shuffle(image_batch)
+    np.random.set_state(numpy_state)
+    np.random.shuffle(class_batch)
+
     return image_batch, class_batch
 
 
