@@ -59,5 +59,3 @@ def get_img():
 
     sess.close()
 
-
-get_img()

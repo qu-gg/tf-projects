@@ -14,8 +14,8 @@ def create_batch(batch_size):
     :param batch_size:
     :return:
     """
-    fakes = Gen.generate_img(batch_size / 2)
-    reals, _ = data.train.next_batch(batch_size / 2)
+    fakes = Gen.generate_img(batch_size // 2)
+    reals, _ = data.train.next_batch(batch_size // 2)
 
     image_batch = []
     class_batch = []
@@ -25,11 +25,11 @@ def create_batch(batch_size):
     for i in range(batch_size):
         if i % 2 == 0:
             image_batch.append(reals[even_index])
-            class_batch.append(1)
+            class_batch.append([1])
             even_index += 1
         else:
             image_batch.append(fakes[odd_index])
-            class_batch.append(0)
+            class_batch.append([0])
             odd_index += 1
 
     # Shuffle
@@ -42,15 +42,23 @@ def create_batch(batch_size):
 
 
 def generator_train():
-    image = GAN.Generator.generate_img()
+    image = Gen.generate_img()
     misc.toimage(image).show()
 
-    images = GAN.Generator.generate_img(50)
-    entropy = GAN.Discriminator.use_discrim(images)
-    GAN.Generator.train_gen(10, entropy)
+    test_i = Gen.generate_img(50)
+    entropy = Dis.use_discrim(test_i)
+    Gen.train_gen(10, entropy)
 
-    image = GAN.Generator.generate_img()
+    image = Gen.generate_img()
     misc.toimage(image).show()
 
 
-generator_train()
+images, classes = [], []
+for i in range(10):
+    i_batch, c_batch = create_batch(68)
+    images.append(i_batch)
+    classes.append(c_batch)
+
+
+print(classes[0])
+Dis.train_discrim(10, images, classes)

@@ -44,14 +44,15 @@ def train_discrim(num_iter, images, classes):
     sess.run(tf.global_variables_initializer())
 
     for i in range(num_iter):
-        feed_dict_train = {input_x: images,
-                           input_cls: classes}
+        feed_dict_train = {input_x: images[i],
+                           input_cls: classes[i]}
 
         sess.run(optimizer, feed_dict=feed_dict_train)
 
         # accuracy
         print("Result: ", sess.run(pred, feed_dict=feed_dict_train))
         print("Acc on ", i, ": ", sess.run(accuracy, feed_dict=feed_dict_train))
+        print("Loss on ", i , ": ", sess.run(loss, feed_dict=feed_dict_train))
 
     sess.close()
 
@@ -62,5 +63,4 @@ def use_discrim(image_batch):
 
     cross_entropy = sess.run(loss, feed_dict={input_x: image_batch})
     return cross_entropy
-
 
