@@ -54,10 +54,11 @@ def train_discrim(num_iter, images, classes):
     sess.close()
 
 
-def use_discrim(image_batch):
+def use_discrim(image_batch, class_batch):
     sess = tf.Session(config=config)
     sess.run(tf.global_variables_initializer())
 
-    cross_entropy = sess.run(loss, feed_dict={input_x: image_batch})
+    cross_entropy = sess.run(loss, feed_dict={input_x: image_batch,
+                                              input_cls: class_batch})
     return cross_entropy
 

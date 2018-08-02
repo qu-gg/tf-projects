@@ -5,41 +5,53 @@ from scipy import misc
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 
+
+def weight_var(shape):
+    return tf.Variable(tf.truncated_normal(shape, stddev=1))
+
+
+def bias_var(shape):
+    return tf.Variable(tf.zeros(shape))
+
+
+def conv_layer(img, weight, bias):
+    layer = tf.nn.conv2d(img, weight, strides=[1, 1, 1, 1], padding='SAME') + bias
+    return layer
+
+
 x_input = tf.placeholder(tf.float32, [None, 49])
 img_input = tf.cast(tf.reshape(x_input, [-1, 7, 7, 1]), tf.float32)
 
-conv1_w = tf.Variable(tf.truncated_normal([7, 7, 1, 1024], stddev=1))
-conv1_b = tf.Variable(tf.zeros([1024]))
-conv1 = tf.nn.conv2d(img_input, conv1_w, strides=[1, 1, 1, 1], padding='SAME') + conv1_b
 
-conv_one = tf.layers.conv2d_transpose(inputs=conv1, filters=512, kernel_size=5, padding='same',
-                                      activation=tf.nn.relu)
+conv1 = conv_layer(img_input, weight_var([7, 7, 1, 32]), bias_var([32]))
+conv1_t = tf.layers.conv2d_transpose(inputs=conv1, filters=1024, kernel_size=5, padding='same', activation=tf.nn.relu)
 
-conv_two = tf.layers.conv2d_transpose(inputs=conv_one, filters=256, kernel_size=5, padding='same',
-                                      activation=tf.nn.relu)
+conv2 = conv_layer(conv1_t, weight_var([7, 7, 1024, 512]), bias_var([512]))
+conv2_t = tf.layers.conv2d_transpose(inputs=conv2, filters=512, kernel_size=5, padding='same', activation=tf.nn.relu)
 
-conv_three = tf.layers.conv2d_transpose(inputs=conv_two, filters=128, kernel_size=5, padding='same', strides=2,
-                                        activation=tf.nn.relu)
+conv3 = conv_layer(conv2_t, weight_var([7, 7, 512, 256]), bias_var([256]))
+conv_three = tf.layers.conv2d_transpose(inputs=conv3, filters=256, kernel_size=5,
+                                        padding='same', activation=tf.nn.relu)
 
-final_layer = tf.layers.conv2d_transpose(inputs=conv_three, filters=1, kernel_size=5, padding='same',
-                                         strides=2, activation=tf.nn.softmax)
+conv_four = tf.layers.conv2d_transpose(inputs=conv_three, filters=128, kernel_size=5, padding='same',
+                                       strides=2, activation=tf.nn.relu)
+
+final_layer = tf.layers.conv2d_transpose(inputs=conv_four, filters=1, kernel_size=5, padding='same',
+                                         strides=2, activation=tf.nn.relu)
 
 
 output = tf.layers.flatten(final_layer)
 reshaped = tf.reshape(output, [28,28])
 
-#  loss = tf.placeholder(tf.float32, [None, 128])
-# cost = tf.reduce_min(loss)
-# optimizer = tf.train.AdamOptimizer(learning_rate=.0001).minimize(cost)
 
-
-def train_gen(num, entropy):
+def train_gen(loss):
     with tf.Session(config=config) as sess:
         sess.run(tf.global_variables_initializer())
 
-        for _ in range(num):
-            print()
-            #sess.run(optimizer, feed_dict={loss: entropy})
+        cost = tf.reduce_min(loss)
+        tf.train.AdamOptimizer(learning_rate=.0001).minimize(cost)
+
+        get_img()
 
 
 def generate_img(num_runs=1):
@@ -59,4 +71,6 @@ def get_img():
         misc.toimage(fake).show()
 
     sess.close()
+    return fake
 
+print(get_img())
