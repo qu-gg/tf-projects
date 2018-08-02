@@ -11,7 +11,7 @@ def weight_var(shape):
 
 
 def bias_var(shape):
-    return tf.Variable(tf.zeros(shape))
+    return tf.Variable(tf.zeros([shape]))
 
 
 def conv_layer(img, weight, bias):
@@ -23,22 +23,23 @@ x_input = tf.placeholder(tf.float32, [None, 49])
 img_input = tf.cast(tf.reshape(x_input, [-1, 7, 7, 1]), tf.float32)
 
 
-conv1 = conv_layer(img_input, weight_var([7, 7, 1, 32]), bias_var([32]))
+conv1 = conv_layer(img_input, weight_var([7, 7, 1, 32]), bias_var(32))
 conv1_t = tf.layers.conv2d_transpose(inputs=conv1, filters=1024, kernel_size=5, padding='same', activation=tf.nn.relu)
 
-conv2 = conv_layer(conv1_t, weight_var([7, 7, 1024, 512]), bias_var([512]))
+conv2 = conv_layer(conv1_t, weight_var([7, 7, 1024, 512]), bias_var(512))
 conv2_t = tf.layers.conv2d_transpose(inputs=conv2, filters=512, kernel_size=5, padding='same', activation=tf.nn.relu)
 
-conv3 = conv_layer(conv2_t, weight_var([7, 7, 512, 256]), bias_var([256]))
-conv_three = tf.layers.conv2d_transpose(inputs=conv3, filters=256, kernel_size=5,
+conv3 = conv_layer(conv2_t, weight_var([7, 7, 512, 256]), bias_var(256))
+conv3_t = tf.layers.conv2d_transpose(inputs=conv3, filters=256, kernel_size=5,
                                         padding='same', activation=tf.nn.relu)
 
-conv_four = tf.layers.conv2d_transpose(inputs=conv_three, filters=128, kernel_size=5, padding='same',
+conv4 = conv_layer(conv3_t, weight_var([14, 14, 256, 128]), bias_var(128))
+conv4_t = tf.layers.conv2d_transpose(inputs=conv4, filters=128, kernel_size=5, padding='same',
                                        strides=2, activation=tf.nn.relu)
 
-final_layer = tf.layers.conv2d_transpose(inputs=conv_four, filters=1, kernel_size=5, padding='same',
+conv5 = conv_layer(conv4_t, weight_var([28, 28, 128, 1]), bias_var(1))
+final_layer = tf.layers.conv2d_transpose(inputs=conv5, filters=1, kernel_size=5, padding='same',
                                          strides=2, activation=tf.nn.relu)
-
 
 output = tf.layers.flatten(final_layer)
 reshaped = tf.reshape(output, [28,28])
