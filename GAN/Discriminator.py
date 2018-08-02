@@ -98,23 +98,13 @@ def train_discrim(num_iter):
     sess.close()
 
 
-def use_discrim(num_iter=1):
+def use_discrim(image_batch):
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
     sess = tf.Session(config=config)
     sess.run(tf.global_variables_initializer())
 
-    batch_size = 64
-    for i in range(num_iter):
-        x_batch, y_true = data.train.next_batch(batch_size)
-        image_batch, class_batch = create_batch(x_batch, batch_size)
-        feed_dict_train = {input_x: image_batch,
-                           input_cls: class_batch}
-
-        cross_entropy = sess.run(loss, feed_dict=feed_dict_train)
-
-    sess.close()
+    cross_entropy = sess.run(loss, feed_dict={input_x: image_batch})
     return cross_entropy
 
 
-use_discrim(1)
