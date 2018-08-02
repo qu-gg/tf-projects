@@ -59,7 +59,8 @@ for i in range(10):
     images.append(i_batch)
     classes.append(c_batch)
 
-
+print(images)
+Gen.get_img()
 Dis.train_discrim(10, images, classes)
 
 
