@@ -60,5 +60,4 @@ for i in range(10):
     classes.append(c_batch)
 
 
-print(classes[0])
 Dis.train_discrim(10, images, classes)

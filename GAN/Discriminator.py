@@ -9,30 +9,28 @@ x_reshape = tf.reshape(input_x, [-1, 28, 28, 1])
 input_cls = tf.placeholder(tf.float32, [None, 1])
 
 conv1_w = tf.Variable(tf.truncated_normal([28, 28, 1, 3]))
-conv1_b = tf.zeros([1])
+conv1_b = tf.truncated_normal([3])
 conv1 = tf.nn.conv2d(x_reshape, conv1_w, padding='SAME', strides=[1, 1, 1, 1]) + conv1_b
 
-conv2 = tf.layers.conv2d(inputs=conv1, padding='same', filters=128, kernel_size=5, strides=2, activation=tf.nn.relu,
-                         kernel_initializer=tf.truncated_normal_initializer(stddev=.001))
+conv2 = tf.layers.conv2d(inputs=conv1, padding='same', filters=16, kernel_size=5, strides=2, activation=tf.nn.relu)
 
-conv3 = tf.layers.conv2d(inputs=conv2, padding='same', filters=256, kernel_size=5, strides=2, activation=tf.nn.relu,
-                         kernel_initializer=tf.truncated_normal_initializer(stddev=.001))
+conv3 = tf.layers.conv2d(inputs=conv2, padding='same', filters=32, kernel_size=5, strides=2, activation=tf.nn.relu)
 
-conv4 = tf.layers.conv2d(inputs=conv3, padding='same', filters=512, kernel_size=5, strides=2, activation=tf.nn.relu,
-                         kernel_initializer=tf.truncated_normal_initializer(stddev=.001))
+conv4 = tf.layers.conv2d(inputs=conv3, padding='same', filters=64, kernel_size=5, strides=2, activation=tf.nn.relu)
 
 flatten = tf.layers.flatten(conv4)
 
-pred = tf.layers.dense(inputs=flatten, units=1, kernel_initializer=tf.truncated_normal_initializer(stddev=.001))
+pred = tf.layers.dense(inputs=flatten, units=1)
 pred = tf.nn.sigmoid(pred)
 
 # Loss, cost, optimizing
-loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=input_cls, logits=pred)
+loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=input_cls, logits=pred)
 cost = tf.reduce_mean(loss)
-optimizer = tf.train.AdamOptimizer(learning_rate=0.001).minimize(cost)
+optimizer = tf.train.AdamOptimizer(learning_rate=0.0001).minimize(cost)
 
 # Accuracy
-correct_prediction = tf.equal(input_cls, pred)
+# correct_prediction = tf.equal(input_cls, pred)
+correct_prediction = tf.equal(tf.greater(pred, [0.5]),tf.cast(input_cls,'bool'))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 config = tf.ConfigProto()
@@ -52,7 +50,6 @@ def train_discrim(num_iter, images, classes):
         # accuracy
         print("Result: ", sess.run(pred, feed_dict=feed_dict_train))
         print("Acc on ", i, ": ", sess.run(accuracy, feed_dict=feed_dict_train))
-        print("Loss on ", i , ": ", sess.run(loss, feed_dict=feed_dict_train))
 
     sess.close()
 
