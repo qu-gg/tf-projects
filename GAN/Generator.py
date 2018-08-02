@@ -74,4 +74,3 @@ def get_img():
     sess.close()
     return fake
 
-print(get_img())

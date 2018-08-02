@@ -63,9 +63,8 @@ for i in range(1):
 Dis.train_discrim(1, images, classes)
 
 
-images = Gen.generate_img(32)
-classes = [[1] for i in range(32)]
+# images = Gen.generate_img(32)
+# classes = [[11] for i in range(32)]
 
-loss = Dis.use_discrim(images, classes)
-print(loss)
-Gen.train_gen(loss)
+# loss = Dis.use_discrim(images, classes)
+# Gen.train_gen(loss)
