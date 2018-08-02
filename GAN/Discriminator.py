@@ -2,10 +2,6 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 tf.logging.set_verbosity(tf.logging.ERROR)
-import numpy as np
-from tensorflow.examples.tutorials.mnist import input_data
-from GAN.Generator import generate_img
-data = input_data.read_data_sets('data/MNIST', one_hot=True)
 
 input_x = tf.placeholder(tf.float32, [None, 784])
 x_reshape = tf.reshape(input_x, [-1, 28, 28, 1])
@@ -39,55 +35,17 @@ optimizer = tf.train.AdamOptimizer(learning_rate=0.001).minimize(cost)
 correct_prediction = tf.equal(input_cls, pred)
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
-
-def create_batch(mnist, batch_size):
-    '''
-    Function for creating a single training batch for the discriminator, mixed of real and fake images
-    Class is 1 if it is real and 0 if it is fake
-    :param mnist:
-    :param mnist_cls:
-    :param batch_size:
-    :return:
-    '''
-    generated = generate_img(batch_size)
-
-    image_batch = []
-    class_batch = []
-
-    even_index = 0
-    odd_index = 0
-    for i in range(batch_size * 2):
-        if i % 2 == 0:
-            image_batch.append(mnist[even_index])
-            class_batch.append([1])
-            even_index += 1
-        else:
-            image_batch.append(generated[odd_index])
-            class_batch.append([0])
-            odd_index += 1
-
-    # Shuffle
-    numpy_state = np.random.get_state()
-    np.random.shuffle(image_batch)
-    np.random.set_state(numpy_state)
-    np.random.shuffle(class_batch)
-
-    return image_batch, class_batch
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
 
 
-def train_discrim(num_iter):
-    config = tf.ConfigProto()
-    config.gpu_options.allow_growth = True
+def train_discrim(num_iter, images, classes):
     sess = tf.Session(config=config)
     sess.run(tf.global_variables_initializer())
 
-    train_batch_size = 64
-
     for i in range(num_iter):
-        x_batch, y_true = data.train.next_batch(train_batch_size)
-        image_batch, class_batch = create_batch(x_batch, train_batch_size)
-        feed_dict_train = {input_x: image_batch,
-                           input_cls: class_batch}
+        feed_dict_train = {input_x: images,
+                           input_cls: classes}
 
         sess.run(optimizer, feed_dict=feed_dict_train)
 
@@ -99,8 +57,6 @@ def train_discrim(num_iter):
 
 
 def use_discrim(image_batch):
-    config = tf.ConfigProto()
-    config.gpu_options.allow_growth = True
     sess = tf.Session(config=config)
     sess.run(tf.global_variables_initializer())
 
