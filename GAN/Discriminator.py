@@ -16,22 +16,18 @@ def bias_var(shape):
     return tf.Variable(tf.zeros([shape]))
 
 
-def conv_layer(img, weight, bias):
-    layer = tf.nn.conv2d(img, weight, strides=[1, 1, 1, 1], padding='SAME') + bias
+def conv_layer(img, weight, bias, strides):
+    layer = tf.nn.conv2d(img, weight, strides=strides, padding='SAME') + bias
     return layer
 
 
-conv1_w = tf.Variable(tf.truncated_normal([28, 28, 1, 3]))
-conv1_b = tf.zeros([3])
+conv1 = conv_layer(x_reshape, weight_var([28, 28, 1, 3]), bias_var(3), [1, 1, 1, 1])
 
-conv1 = conv_layer(x_reshape, weight_var([28, 28, 1, 3]), bias_var(3))
-# conv1 = tf.nn.conv2d(x_reshape, conv1_w, padding='SAME', strides=[1, 1, 1, 1]) + conv1_b
+conv2 = conv_layer(conv1, weight_var([14, 14, 3, 128]), bias_var(128), [1, 2, 2, 1])
 
-conv2 = tf.layers.conv2d(inputs=conv1, padding='same', filters=128, kernel_size=5, strides=2, activation=tf.nn.relu)
+conv3 = conv_layer(conv2, weight_var([7, 7, 128, 256]), bias_var(256), [1, 2, 2, 1])
 
-conv3 = tf.layers.conv2d(inputs=conv2, padding='same', filters=256, kernel_size=5, strides=2, activation=tf.nn.relu)
-
-conv4 = tf.layers.conv2d(inputs=conv3, padding='same', filters=512, kernel_size=5, strides=2, activation=tf.nn.relu)
+conv4 = conv_layer(conv3, weight_var([7, 7, 256, 512]), bias_var(512), [1, 2, 2, 1])
 
 flatten = tf.layers.flatten(conv4)
 

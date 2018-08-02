@@ -54,13 +54,13 @@ def generator_train():
 
 
 images, classes = [], []
-for i in range(1):
+for i in range(10):
     i_batch, c_batch = create_batch(68)
     images.append(i_batch)
     classes.append(c_batch)
 
 
-Dis.train_discrim(1, images, classes)
+Dis.train_discrim(10, images, classes)
 
 
 # images = Gen.generate_img(32)
