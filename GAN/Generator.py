@@ -8,24 +8,22 @@ config.gpu_options.allow_growth = True
 x_input = tf.placeholder(tf.float32, [None, 49])
 img_input = tf.cast(tf.reshape(x_input, [-1, 7, 7, 1]), tf.float32)
 
-conv1_w = tf.Variable(tf.truncated_normal([7, 7, 1, 32], stddev=1))
-conv1_b = tf.Variable(tf.zeros([32]))
+conv1_w = tf.Variable(tf.truncated_normal([7, 7, 1, 1024], stddev=1))
+conv1_b = tf.Variable(tf.zeros([1024]))
 conv1 = tf.nn.conv2d(img_input, conv1_w, strides=[1, 1, 1, 1], padding='SAME') + conv1_b
 
-conv_one = tf.layers.conv2d_transpose(inputs=conv1, filters=1024, kernel_size=5, padding='same',
+conv_one = tf.layers.conv2d_transpose(inputs=conv1, filters=512, kernel_size=5, padding='same',
                                       activation=tf.nn.relu)
 
-conv_two = tf.layers.conv2d_transpose(inputs=conv_one, filters=512, kernel_size=5, padding='same',
+conv_two = tf.layers.conv2d_transpose(inputs=conv_one, filters=256, kernel_size=5, padding='same',
                                       activation=tf.nn.relu)
 
-conv_three = tf.layers.conv2d_transpose(inputs=conv_two, filters=256, kernel_size=5, padding='same',
+conv_three = tf.layers.conv2d_transpose(inputs=conv_two, filters=128, kernel_size=5, padding='same', strides=2,
                                         activation=tf.nn.relu)
 
-conv_four = tf.layers.conv2d_transpose(inputs=conv_three, filters=128, kernel_size=5, padding='same', strides=2,
-                                       activation=tf.nn.relu)
+final_layer = tf.layers.conv2d_transpose(inputs=conv_three, filters=1, kernel_size=5, padding='same',
+                                         strides=2, activation=tf.nn.relu)
 
-final_layer = tf.layers.conv2d_transpose(inputs=conv_four, filters=1, kernel_size=5, padding='same', strides=2,
-                                         activation=tf.nn.relu)
 
 output = tf.layers.flatten(final_layer)
 reshaped = tf.reshape(output, [28,28])
@@ -51,3 +49,15 @@ def generate_img(num_runs=1):
 
     sess.close()
     return fake
+
+
+def get_img():
+    with tf.Session(config=config) as sess:
+        sess.run(tf.global_variables_initializer())
+        fake = sess.run(reshaped, feed_dict={x_input: [np.random.uniform(0, 1, 49)]})
+        misc.toimage(fake).show()
+
+    sess.close()
+
+
+get_img()
