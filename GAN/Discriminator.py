@@ -19,7 +19,7 @@ def bias_var(sh):
 
 def conv_layer(img, weight, bias, strides):
     layer = tf.nn.conv2d(img, weight, strides=strides, padding='SAME',) + bias
-    result = tf.nn.relu(layer)
+    result = tf.nn.leaky_relu(layer)
     return result
 
 
@@ -34,15 +34,15 @@ conv4 = conv_layer(conv3, weight_var([5, 5, 128, 256]), bias_var(256), [1, 2, 2,
 flatten = tf.layers.flatten(conv4)
 
 pred = tf.layers.dense(inputs=flatten, units=1)
-pred = tf.nn.sigmoid(pred)
+guess = tf.nn.sigmoid(pred)
 
 # Loss, cost, optimizing
 loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=input_cls, logits=pred)
 cost = tf.reduce_mean(loss)
-optimizer = tf.train.AdamOptimizer(learning_rate=0.0001).minimize(cost)
+optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.0001).minimize(cost)
 
 # Accuracy
-correct_prediction = tf.equal(tf.greater(pred, [0.5]), tf.cast(input_cls,'bool'))
+correct_prediction = tf.equal(tf.greater(pred, [0.5]), tf.cast(input_cls, 'bool'))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 config = tf.ConfigProto()
@@ -60,7 +60,10 @@ def train_discrim(num_iter, images, classes):
         sess.run(optimizer, feed_dict=feed_dict_train)
 
         # accuracy
-        print("Result: ", sess.run(pred, feed_dict=feed_dict_train)[0:10])
+        print("Result: ")
+        print(sess.run(pred, feed_dict=feed_dict_train)[0:5])
+        print("Loss: ")
+        print(sess.run(loss, feed_dict=feed_dict_train)[0:5])
         print("Acc on ", i, ": ", sess.run(accuracy, feed_dict=feed_dict_train))
 
     sess.close()
@@ -72,5 +75,6 @@ def use_discrim(image_batch, class_batch):
 
     cross_entropy = sess.run(loss, feed_dict={input_x: image_batch,
                                               input_cls: class_batch})
+
     return cross_entropy
 

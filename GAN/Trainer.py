@@ -3,6 +3,7 @@ import GAN.Generator as Gen
 from scipy import misc
 import tensorflow as tf
 import numpy as np
+import random
 from tensorflow.examples.tutorials.mnist import input_data
 data = input_data.read_data_sets('data/MNIST', one_hot=True)
 
@@ -10,27 +11,23 @@ data = input_data.read_data_sets('data/MNIST', one_hot=True)
 def create_batch(batch_size):
     """
     Function for creating a single training batch for the discriminator, mixed of real and fake images
-    Class is 1 if it is real and 0 if it is fake
+    Class is 0 if it is real and 1 if it is fake
     :param batch_size:
     :return:
     """
-    fakes = Gen.generate_img(batch_size // 2)
-    reals, _ = data.train.next_batch(batch_size // 2)
+    num = random.randint(20, 40)
+    fakes = Gen.generate_img(num)
+    reals, _ = data.train.next_batch(batch_size - num)
 
     image_batch = []
     class_batch = []
 
-    even_index = 0
-    odd_index = 0
-    for i in range(batch_size):
-        if i % 2 == 0:
-            image_batch.append(reals[even_index])
-            class_batch.append([1])
-            even_index += 1
-        else:
-            image_batch.append(fakes[odd_index])
-            class_batch.append([0])
-            odd_index += 1
+    for i in range(batch_size - num):
+        image_batch.append(reals[i])
+        class_batch.append([random.uniform(0.0, 0.1)])
+    for i in range(num):
+        image_batch.append(fakes[i])
+        class_batch.append([random.uniform(0.9, 1.0)])
 
     # Shuffle
     numpy_state = np.random.get_state()
@@ -59,13 +56,13 @@ for i in range(10):
     images.append(i_batch)
     classes.append(c_batch)
 
-print(images)
-Gen.get_img()
 Dis.train_discrim(10, images, classes)
 
+images = Gen.generate_img(32)
+classes = [[0] for i in range(32)]
 
-# images = Gen.generate_img(32)
-# classes = [[11] for i in range(32)]
+#loss = Dis.use_discrim(images, classes)
 
-# loss = Dis.use_discrim(images, classes)
-# Gen.train_gen(loss)
+
+#Gen.train_gen(loss)
+Gen.get_img()

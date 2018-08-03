@@ -40,26 +40,33 @@ conv5 = conv_layer(conv4_t, weight_var([5, 5, 128, 1]), bias_var(1))
 final_layer = tf.layers.conv2d_transpose(inputs=conv5, filters=1, kernel_size=5, padding='same',
                                          strides=2, activation=tf.nn.tanh)
 
+print(conv1)
+print(conv1_t)
+print(conv2)
+print(conv3)
+print(conv4)
+
 output = tf.layers.flatten(final_layer)
 reshaped = tf.reshape(output, [28,28])
 
 
-def train_gen(loss):
+def train_gen(entropy):
     with tf.Session(config=config) as sess:
         sess.run(tf.global_variables_initializer())
+        loss = tf.convert_to_tensor(entropy)
+        cost = tf.reduce_mean(loss)
+        optimizer = tf.train.AdamOptimizer(learning_rate=.0001).minimize(cost)
 
-        cost = tf.reduce_min(loss)
-        tf.train.AdamOptimizer(learning_rate=.0001).minimize(cost)
-
+        sess.run(optimizer)
         get_img()
+    sess.close()
 
 
 def generate_img(num_runs=1):
     with tf.Session(config=config) as sess:
         sess.run(tf.global_variables_initializer())
-        fakes = [np.random.uniform(-1, 1, 49) for _ in range(num_runs)]
+        fakes = [np.random.uniform(0, 1, 49) for _ in range(num_runs)]
         fake = sess.run(output, feed_dict={x_input: fakes})
-
     sess.close()
     return fake
 
@@ -67,12 +74,10 @@ def generate_img(num_runs=1):
 def get_img():
     with tf.Session(config=config) as sess:
         sess.run(tf.global_variables_initializer())
-        fake = sess.run(reshaped, feed_dict={x_input: [np.random.uniform(-1, 1, 49)]})
+        fake = sess.run(reshaped, feed_dict={x_input: [np.random.uniform(0, 1, 49)]})
         print(fake)
         misc.toimage(fake).show()
 
     sess.close()
     return fake
 
-
-get_img()
