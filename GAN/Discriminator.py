@@ -34,12 +34,12 @@ conv4 = conv_layer(conv3, weight_var([5, 5, 128, 256]), bias_var(256), [1, 2, 2,
 flatten = tf.layers.flatten(conv4)
 
 pred = tf.layers.dense(inputs=flatten, units=1)
-guess = tf.nn.sigmoid(pred)
+pred = tf.nn.sigmoid(pred)
 
 # Loss, cost, optimizing
 loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=input_cls, logits=pred)
 cost = tf.reduce_mean(loss)
-optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.0001).minimize(cost)
+optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.00085).minimize(cost)
 
 # Accuracy
 correct_prediction = tf.equal(tf.greater(pred, [0.5]), tf.cast(input_cls, 'bool'))
@@ -73,8 +73,9 @@ def use_discrim(image_batch, class_batch):
     sess = tf.Session(config=config)
     sess.run(tf.global_variables_initializer())
 
-    cross_entropy = sess.run(loss, feed_dict={input_x: image_batch,
+    cross_entropy = sess.run(cost, feed_dict={input_x: image_batch,
                                               input_cls: class_batch})
 
+    sess.close()
     return cross_entropy
 

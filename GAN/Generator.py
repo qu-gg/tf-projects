@@ -40,12 +40,6 @@ conv5 = conv_layer(conv4_t, weight_var([5, 5, 128, 1]), bias_var(1))
 final_layer = tf.layers.conv2d_transpose(inputs=conv5, filters=1, kernel_size=5, padding='same',
                                          strides=2, activation=tf.nn.tanh)
 
-print(conv1)
-print(conv1_t)
-print(conv2)
-print(conv3)
-print(conv4)
-
 output = tf.layers.flatten(final_layer)
 reshaped = tf.reshape(output, [28,28])
 
@@ -53,8 +47,7 @@ reshaped = tf.reshape(output, [28,28])
 def train_gen(entropy):
     with tf.Session(config=config) as sess:
         sess.run(tf.global_variables_initializer())
-        loss = tf.convert_to_tensor(entropy)
-        cost = tf.reduce_mean(loss)
+        cost = tf.convert_to_tensor(entropy)
         optimizer = tf.train.AdamOptimizer(learning_rate=.0001).minimize(cost)
 
         sess.run(optimizer)

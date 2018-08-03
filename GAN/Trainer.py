@@ -44,25 +44,24 @@ def generator_train():
 
     test_i = Gen.generate_img(50)
     entropy = Dis.use_discrim(test_i, None)
-    Gen.train_gen(10, entropy)
+    Gen.train_gen(entropy)
 
     image = Gen.generate_img()
     misc.toimage(image).show()
 
 
 images, classes = [], []
-for i in range(10):
+for i in range(1):
     i_batch, c_batch = create_batch(68)
     images.append(i_batch)
     classes.append(c_batch)
 
-Dis.train_discrim(10, images, classes)
+Dis.train_discrim(1, images, classes)
 
 images = Gen.generate_img(32)
 classes = [[0] for i in range(32)]
 
-#loss = Dis.use_discrim(images, classes)
+cost = Dis.use_discrim(images, classes)
 
-
-#Gen.train_gen(loss)
+Gen.train_gen(cost)
 Gen.get_img()
