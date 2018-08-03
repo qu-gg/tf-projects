@@ -149,6 +149,8 @@ def use_discrim(image_batch, class_batch):
 """
 Initializing uninitialized variables
 """
+
+
 def initialize_uninitialized(sess):
     global_vars = tf.global_variables()
     is_not_initialized = sess.run([tf.is_variable_initialized(var) for var in global_vars])
