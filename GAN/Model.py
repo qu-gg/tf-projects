@@ -66,9 +66,9 @@ Generator Network
 """
 
 
-def generator(noise, shaped=False):
+def generator(noise, sess=tf.Session(), shaped=False):
     with tf.name_scope('genera'):
-        x_input = noise
+        x_input = tf.placeholder(tf.float32, [None, 49])
         img_input = tf.cast(tf.reshape(x_input, [-1, 7, 7, 1]), tf.float32)
 
         conv1 = gen_layer(img_input, weight_var([5, 5, 1, 32]), bias_var(32))
@@ -92,18 +92,19 @@ def generator(noise, shaped=False):
         if shaped:
             return tf.reshape(output, [28,28])
 
-    return output
+    result = sess.run(output, feed_dict={x_input: noise})
+    return result
 
 
-def generate_img(num_runs=1):
+def generate_img(num_runs=1, sess=tf.Session()):
     fakes = [np.random.uniform(-1, 1, 49) for _ in range(num_runs)]
-    fake = generator(fakes)
+    fake = generator(fakes, sess)
 
     return fake
 
 
-def get_img():
-    fake = generator([np.random.uniform(-1, 1, 49) for _ in range(1)], True)
+def get_img(sess=tf.Session()):
+    fake = generator([np.random.uniform(-1, 1, 49) for _ in range(1)], sess, True)
     print(fake)
     misc.toimage(fake).show()
 
@@ -115,12 +116,12 @@ Discriminator Network
 """
 
 
-def discriminator(inputs, classes):
+def discriminator(inputs, classes, sess=tf.Session()):
     with tf.name_scope("discrim"):
-        input_x = inputs
+        input_x = tf.placeholder(tf.float32, [None, 784])
         x_reshape = tf.reshape(input_x, [-1, 28, 28, 1])
 
-        input_cls = classes
+        input_cls = tf.placeholder(tf.float32, [None, 1])
         conv1 = discrim_layer(x_reshape, weight_var([5, 5, 1, 3]), bias_var(3), [1, 1, 1, 1])
 
         conv2 = discrim_layer(conv1, weight_var([5, 5, 3, 64]), bias_var(64), [1, 2, 2, 1])
@@ -134,7 +135,10 @@ def discriminator(inputs, classes):
         pred = tf.layers.dense(inputs=flatten, units=1)
         pred = tf.nn.sigmoid(pred)
 
-    return pred
+        loss = tf.nn.sigmoid_cross_entropy_with_logits(logits=pred, labels=input_cls)
+
+    output = sess.run(loss, feed_dict={input_x: inputs, input_cls: classes})
+    return output
 
 
 def use_discrim(image_batch, class_batch):
@@ -185,6 +189,40 @@ def main():
     )
 
     get_img()
+
+
+def session():
+    with tf.Session(config=config) as sess:
+        sess.run(tf.global_variables_initializer())
+        batch_size = 68
+
+        gen_sample = generator([np.random.uniform(-1, 1, 49) for _ in range(batch_size)], sess)
+
+        # Probability for real images
+        images, _ = data.train.next_batch(batch_size)
+        classes = [[0] for _ in range(batch_size)]
+        dis_real = discriminator(images, classes, sess)
+
+        # Probability for fake images
+        gen_classes = [[1] for _ in range(batch_size)]
+        dis_fake = discriminator(gen_sample, gen_classes, sess)
+
+        # Loss
+        dis_loss = -tf.reduce_mean(np.log(dis_real) + np.log(1 - dis_fake))
+        gen_loss = -tf.reduce_mean(np.log(dis_fake))
+
+        # Training
+        dis_solver = tf.train.GradientDescentOptimizer(learning_rate=.00085).minimize(
+            dis_loss, var_list=[item for item in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='discrim')]
+        )
+
+        gen_solver = tf.train.AdamOptimizer(learning_rate=.00085).minimize(
+            gen_loss, var_list=[item for item in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='genera')]
+        )
+
+        get_img(sess)
+    sess.close()
+
 
 
 if __name__ == '__main__':
