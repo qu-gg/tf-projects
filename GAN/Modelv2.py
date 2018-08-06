@@ -16,8 +16,8 @@ config.gpu_options.allow_growth = True
 Generator Network
 """
 
-g1_w = tf.Variable(tf.truncated_normal([5, 5, 1, 32], stddev=.1))
-g1_b = tf.Variable(tf.ones([32]))
+g1_w = tf.Variable(tf.truncated_normal([5, 5, 1, 1024], stddev=.1))
+g1_b = tf.Variable(tf.ones([1]))
 
 g2_w = tf.Variable(tf.truncated_normal([5, 5, 1024, 512], stddev=.1))
 g2_b = tf.Variable(tf.ones([512]))
@@ -34,8 +34,9 @@ g5_b = tf.Variable(tf.ones([1]))
 theta_g = [g1_w, g2_w, g3_w, g4_w, g5_w, g1_b, g2_w, g3_b, g4_b, g5_b]
 
 
-def generator(noise):
-    img_input = tf.cast(tf.reshape(noise, [-1, 7, 7, 1]), tf.float32)
+def generator(noise, reshaped=False):
+    inputs = np.asarray(noise)
+    img_input = tf.cast(tf.reshape(inputs, [-1, 7, 7, 1]), tf.float32)
     conv1 = tf.nn.conv2d(img_input, g1_w, strides=[1, 1, 1, 1], padding='SAME') + g1_b
 
     conv2 = tf.nn.conv2d(conv1, g2_w, strides=[1, 1, 1, 1], padding='SAME') + g2_b
@@ -51,8 +52,9 @@ def generator(noise):
                                              strides=2, activation=tf.nn.tanh)
 
     output = tf.layers.flatten(final_layer)
-    reshaped = tf.reshape(output, [28, 28])
-    return output, reshaped
+    if reshaped:
+        return tf.reshape(output, [28, 28])
+    return output
 
 
 """
@@ -75,8 +77,8 @@ theta_d = [d1_w, d2_w, d3_w, d4_w, d1_b, d2_b, d3_b, d4_b]
 
 
 def discriminator(inputs):
-    input_x = inputs
-    x_reshape = tf.reshape(input_x, [-1, 28, 28, 1])
+    # input_x = tf.cast(np.asarray(inputs), tf.float32)
+    x_reshape = tf.reshape(inputs, [-1, 28, 28, 1])
 
     conv1 = tf.nn.conv2d(x_reshape, d1_w, strides=[1, 1, 1, 1], padding='SAME') + d1_b
 
@@ -91,7 +93,7 @@ def discriminator(inputs):
     pred = tf.layers.dense(inputs=flatten, units=1)
     pred_logit = tf.nn.sigmoid(pred)
 
-    return pred, pred_logit
+    return pred
 
 
 batch_size = 68
@@ -101,10 +103,10 @@ gen_sample = generator(z_noise)
 
 # Probability for real images
 images, _ = data.train.next_batch(batch_size)
-d_real, _ = discriminator(images)
+d_real = discriminator(images)
 
 # Probability for fake images
-d_fake, _ = discriminator(gen_sample)
+d_fake = discriminator(gen_sample)
 
 # Loss
 d_loss = -tf.reduce_mean(tf.log(d_real) + tf.log(1. - d_fake))
@@ -112,9 +114,12 @@ g_loss = -tf.reduce_mean(tf.log(d_fake))
 
 # Training
 gen_optimizer = tf.train.AdamOptimizer(learning_rate=.00085).minimize(g_loss, var_list=theta_g)
-
 dis_optimizer = tf.train.GradientDescentOptimizer(learning_rate=.00085).minimize(d_loss, var_list=theta_d)
 
+
+# Image Creation
+img_noise = [np.random.uniform(-1., 1., 49)]
+sample_return = generator(img_noise, True)
 
 with tf.Session(config=config) as sess:
     sess.run(tf.global_variables_initializer())
@@ -123,7 +128,9 @@ with tf.Session(config=config) as sess:
         sess.run(gen_optimizer)
 
         if _ % 100 == 0:
-            fake = generator([np.random.uniform(-1., 1., 49)])
+            fake = sess.run(sample_return)
+            # fake = sess.run(image, feed_dict={vec_noise: [np.random.uniform(-1., 1., 49)]})
+            print(fake)
             misc.toimage(fake).show()
 
 sess.close()
