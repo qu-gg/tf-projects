@@ -224,6 +224,5 @@ def session():
     sess.close()
 
 
-
 if __name__ == '__main__':
-    main()
+    session()
